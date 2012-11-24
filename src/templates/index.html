@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Garage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+  </head>
+  <body>
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="brand" href="#">Hacker Space</a>
+            <ul class="nav">
+              <li class="active"><a href="#">Garage</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <div class="container">
+      <div class="page-header">
+        <h1>Garage</h1>
+      </div>
+      {% if toggle_door %}
+        <div class="alert alert-danger">
+          <h4 class="alert-heading">Garage in motion!</h4>
+          <div class="progress progress-striped progress-danger">
+            <div class="bar" style="width: 50%;"></div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if is_opened %}
+        <div class="alert">Garage is opened!</div>
+      {% else %}
+        <div class="alert alert-info">Garage is closed</div>
+      {% endif %}
+      <form method="POST" action="/garage/" class="inline">
+        <div class="btn-group">
+          <input type="button" class="btn btn-primary" value="Refresh" onclick="javascript:window.location.href='/refresh/'" />
+          <input type="submit" class="btn btn-danger" value="Open/Close" />
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

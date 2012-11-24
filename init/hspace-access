@@ -1,0 +1,34 @@
+#!/bin/sh
+
+set -eu
+
+NAME=hspace-access
+PREFIX=/opt/$NAME
+DAEMON=/usr/bin/python
+DAEMON_OPTS=$PREFIX/src/server.py
+PIDFILE=$PREFIX/var/run/$NAME.pid
+USER=root
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+case "$1" in
+  start)
+    echo -n "Starting daemon: $NAME"
+    start-stop-daemon --start --chdir $PREFIX --quiet --chuid $USER --pidfile $PIDFILE --background --exec $DAEMON -- $DAEMON_OPTS
+    ;;
+  stop)
+    echo -n "Stopping daemon: $NAME"
+    start-stop-daemon --stop --chdir $PREFIX --quiet --chuid $USER --oknodo --pidfile $PIDFILE
+    ;;
+  restart)
+    echo -n "Restarting daemon: $NAME"
+    start-stop-daemon --stop --chdir $PREFIX --quiet --chuid $USER --oknodo --retry 30 --pidfile $PIDFILE
+    start-stop-daemon --start --chdir $PREFIX --quiet --chuid $USER --pidfile $PIDFILE --background --exec $DAEMON -- $DAEMON_OPTS
+    ;;
+
+  *)
+    echo "Usage: "$1" {start|stop|restart}"
+    exit 1
+esac
+
+exit 0
