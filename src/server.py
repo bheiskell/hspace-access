@@ -5,6 +5,7 @@
 import ftdi
 import time
 import thread
+import logging
 
 from flask import Flask, render_template, url_for, request, redirect
 app = Flask(__name__)
@@ -14,6 +15,8 @@ toggle_door=False
 
 CTS=0x08 # CTS (brown wire on FTDI cable) 
 RXT=0x02 # CTS (brown wire on FTDI cable) 
+
+LOG=logging.getLogger(__name__)
  
 @app.route('/')
 def index():
@@ -52,14 +55,22 @@ while True:
 	result = " "
 	ftdi.ftdi_read_pins(ftdic, result)
 
+	was_closed = is_closed
 	is_closed = 0 != ord(result) & RXT
 
-	print "Full: %s\t Masked: %s\t Is Closed: %s\t To Write: %s" \
-		% (hex(ord(result)), hex(ord(result) & RXT), is_closed, hex(ord(result) | CTS))
+	if was_closed != is_closed:
+		with open ('status', 'w') as f: f.write ('closed' if is_closed else 'open')
+
+	LOG.info("Full: %s\t Masked: %s\t Is Closed: %s\t To Write: %s", \
+		hex(ord(result)),
+		hex(ord(result) & RXT),
+		is_closed,
+		hex(ord(result) | CTS)
+	)
 
 	opening=False
 	if toggle_door:
-		print "Opening Door"
+		LOG.info("Opening Door")
 		ftdi.ftdi_write_data(ftdic, chr(ord(result) | CTS), 1)
 		opening = True
 
@@ -69,9 +80,12 @@ while True:
 		new_result = " "
 		ftdi.ftdi_read_pins(ftdic, new_result)
 
-		print "... Released"
-		print "... %s vs %s & %s = %s" \
-			% (hex(ord(result)), hex(ord(new_result)), hex(~CTS), hex(ord(new_result) & (~CTS)))
+		LOG.info("... %s vs %s & %s = %s", \
+			hex(ord(result)),
+			hex(ord(new_result)),
+			hex(~CTS),
+			hex(ord(new_result) & (~CTS))
+		)
 
 		ftdi.ftdi_write_data(ftdic, chr(ord(new_result) & ((~CTS) & (~RXT))), 1)
 		toggle_door = False
